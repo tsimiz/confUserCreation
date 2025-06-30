@@ -345,7 +345,11 @@ function Show-DryRunPreview {
     Write-Host "  • Conference Name: $ConferenceName" -ForegroundColor White
     Write-Host "  • User Count: $UserCount" -ForegroundColor White
     Write-Host "  • Domain: $UserDomain" -ForegroundColor White
-    Write-Host "  • Password: $UserPassword" -ForegroundColor White
+    if ($UserPassword -and $UserPassword -ne "UNIQUE") {
+        Write-Host "  • Password: $UserPassword (same for all users)" -ForegroundColor White
+    } else {
+        Write-Host "  • Password: Unique password will be generated for each user" -ForegroundColor White
+    }
     Write-Host "  • Force Password Change: $ForcePasswordChange" -ForegroundColor White
     Write-Host "  • Create Resource Groups: $CreateResourceGroups" -ForegroundColor White
     if ($CreateResourceGroups -and $ResourceGroupLocation) {
@@ -499,7 +503,6 @@ function Export-UsersToExcel {
     param(
         [array]$Users,
         [string]$ConferenceName,
-        [string]$Password,
         [string]$OutputPath
     )
     
@@ -532,7 +535,7 @@ function Export-UsersToExcel {
                 'Display Name' = $user.DisplayName
                 'Username' = $user.Username
                 'Email Address' = $user.UserPrincipalName
-                'Password' = $Password
+                'Password' = $user.Password
                 'Resource Group' = if ($user.ResourceGroup) { $user.ResourceGroup } else { "N/A" }
                 'Object ID' = $user.ObjectId
                 'Created Date' = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -588,13 +591,14 @@ function Main {
     # Generate or use provided password
     $userPassword = if ($Password) { $Password } else { New-RandomPassword }
     if (!$Password) {
-        Write-Host "Generated password: $userPassword" -ForegroundColor Yellow
-        Write-Host "IMPORTANT: Save this password - it will be used for all created users!" -ForegroundColor Red
+        Write-Host "Unique passwords will be generated for each user" -ForegroundColor Yellow
+        Write-Host "IMPORTANT: Individual passwords will be available in the Excel export file!" -ForegroundColor Red
     }
     
     # Show dry run preview and get confirmation
     if ($DryRun) {
-        Show-DryRunPreview -ConferenceName $ConferenceName -UserCount $UserCount -UserDomain $userDomain -UserPassword $userPassword -ForcePasswordChange $ForcePasswordChange -CreateResourceGroups $CreateResourceGroups -ResourceGroupLocation $resourceGroupLocation
+        $previewPassword = if ($Password) { $Password } else { "UNIQUE" }
+        Show-DryRunPreview -ConferenceName $ConferenceName -UserCount $UserCount -UserDomain $userDomain -UserPassword $previewPassword -ForcePasswordChange $ForcePasswordChange -CreateResourceGroups $CreateResourceGroups -ResourceGroupLocation $resourceGroupLocation
         
         $confirmation = Read-Host "Do you want to proceed with creating these resources? (y/N)"
         if ($confirmation -notmatch '^[Yy]') {
@@ -625,9 +629,12 @@ function Main {
         $upn = "$username@$userDomain"
         $displayName = "$ConferenceName Workshop User $i"
         
+        # Generate unique password for each user
+        $individualPassword = if ($Password) { $Password } else { New-RandomPassword }
+        
         Write-Host "Creating user $i of $UserCount : $upn" -ForegroundColor Cyan
         
-        $user = New-ConferenceUser -Username $username -UserPrincipalName $upn -DisplayName $displayName -Password $userPassword -ForcePasswordChange $ForcePasswordChange
+        $user = New-ConferenceUser -Username $username -UserPrincipalName $upn -DisplayName $displayName -Password $individualPassword -ForcePasswordChange $ForcePasswordChange
         
         if ($user) {
             # Add user to group
@@ -650,6 +657,7 @@ function Main {
                 DisplayName = $displayName
                 ObjectId = $user.Id
                 ResourceGroup = $resourceGroupName
+                Password = $individualPassword
             }
             $successCount++
         }
@@ -681,7 +689,12 @@ function Main {
         Write-Host ""
         Write-Host "Login Information:" -ForegroundColor Yellow
         Write-Host "Username Format: $ConferenceName-user[1-$UserCount]@$userDomain" -ForegroundColor White
-        Write-Host "Password: $userPassword" -ForegroundColor White
+        if ($Password) {
+            Write-Host "Password: $Password (same for all users)" -ForegroundColor White
+        } else {
+            Write-Host "Passwords: Unique password generated for each user" -ForegroundColor White
+            Write-Host "Individual passwords are available in the Excel export file" -ForegroundColor Yellow
+        }
         Write-Host "Force Password Change: $ForcePasswordChange" -ForegroundColor White
         
         if ($conferenceGroup) {
@@ -696,7 +709,7 @@ function Main {
         # Export to Excel
         Write-Host ""
         Write-Host "Exporting user information to Excel..." -ForegroundColor Yellow
-        $excelFilePath = Export-UsersToExcel -Users $createdUsers -ConferenceName $ConferenceName -Password $userPassword -OutputPath $ExcelOutputPath
+        $excelFilePath = Export-UsersToExcel -Users $createdUsers -ConferenceName $ConferenceName -OutputPath $ExcelOutputPath
     }
     
     # Disconnect from Microsoft Graph
