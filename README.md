@@ -1,14 +1,17 @@
 # Conference User Creation Script
 
-A PowerShell script to create conference workshop user accounts in an Azure tenant. This script automatically discovers the current Azure tenant and creates a specified number of Entra ID users with a standardized naming pattern.
+A PowerShell script to create conference workshop user accounts in an Azure tenant. This script automatically discovers the current Azure tenant and creates a specified number of Entra ID users with a standardized naming pattern. It also includes functionality to create Entra ID groups and Azure resource groups for enhanced organization and access control.
 
 ## Features
 
 - **Automatic Tenant Discovery**: Automatically detects and uses the current Azure tenant
 - **Standardized Naming**: Creates users with pattern `<ConferenceName>-user1`, `<ConferenceName>-user2`, etc.
+- **Entra ID Group Management**: Creates and manages Entra ID groups for conference users
+- **Azure Resource Groups**: Optionally creates individual resource groups for each user
 - **Flexible Configuration**: Customizable user count, domain, and password settings
 - **Error Handling**: Robust error handling with detailed logging
 - **Security**: Uses Microsoft Graph API with proper authentication and permissions
+- **Cleanup Support**: Includes deletion script for removing created resources
 
 ## Prerequisites
 
@@ -18,24 +21,37 @@ Install the required Microsoft Graph PowerShell modules:
 ```powershell
 Install-Module Microsoft.Graph.Authentication -Force
 Install-Module Microsoft.Graph.Users -Force
+Install-Module Microsoft.Graph.Groups -Force
+```
+
+For Azure resource group functionality, also install:
+```powershell
+Install-Module Az.Accounts -Force
+Install-Module Az.Resources -Force
 ```
 
 ### Azure Permissions
 The user running the script must have sufficient permissions in the Azure tenant:
 - **User.ReadWrite.All**: To create and manage users
 - **Directory.Read.All**: To read tenant information
+- **Group.ReadWrite.All**: To create and manage groups
+
+For Azure resource group creation:
+- **Contributor** or **Owner** role in the target subscription
 
 ### Authentication
 You must be authenticated to Azure with appropriate permissions. The script will prompt for authentication when run.
 
 ## Usage
 
-### Basic Usage
+### Creating Users
+
+#### Basic Usage
 ```powershell
 .\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 15
 ```
 
-### Advanced Usage
+#### Advanced Usage
 ```powershell
 # Create users with custom password
 .\New-ConferenceUsers.ps1 -ConferenceName "DevWorkshop" -UserCount 5 -Password "TempPass123!"
@@ -45,9 +61,36 @@ You must be authenticated to Azure with appropriate permissions. The script will
 
 # Create users without forcing password change
 .\New-ConferenceUsers.ps1 -ConferenceName "SecureConf" -UserCount 10 -ForcePasswordChange $false
+
+# Create users with Azure resource groups
+.\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 10 -CreateResourceGroups $true -Location "East US"
+
+# Create users with Azure resource groups in specific subscription
+.\New-ConferenceUsers.ps1 -ConferenceName "DevWorkshop" -UserCount 5 -CreateResourceGroups $true -SubscriptionId "12345678-1234-1234-1234-123456789012" -Location "West Europe"
+```
+
+### Removing Users
+
+#### Basic Removal
+```powershell
+.\Remove-ConferenceUsers.ps1 -ConferenceName "TechConf2024"
+```
+
+#### Advanced Removal
+```powershell
+# Remove users and groups but not resource groups
+.\Remove-ConferenceUsers.ps1 -ConferenceName "DevWorkshop" -RemoveResourceGroups $false
+
+# Remove everything including resource groups without confirmation
+.\Remove-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -RemoveResourceGroups $true -Force
+
+# Remove users from specific domain
+.\Remove-ConferenceUsers.ps1 -ConferenceName "CloudSummit" -Domain "contoso.com"
 ```
 
 ## Parameters
+
+### New-ConferenceUsers.ps1
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -56,6 +99,19 @@ You must be authenticated to Azure with appropriate permissions. The script will
 | `Domain` | String | No | Auto-detected | Domain for user principal names |
 | `Password` | String | No | Auto-generated | Initial password for all users |
 | `ForcePasswordChange` | Boolean | No | $true | Force password change on first login |
+| `CreateResourceGroups` | Boolean | No | $false | Create Azure resource groups for each user |
+| `SubscriptionId` | String | No | Current context | Azure subscription ID for resource groups |
+| `Location` | String | No | Interactive selection | Azure location for resource groups |
+
+### Remove-ConferenceUsers.ps1
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `ConferenceName` | String | Yes | - | Conference name to identify users to remove |
+| `Domain` | String | No | Auto-detected | Domain for user principal names |
+| `RemoveGroups` | Boolean | No | $true | Remove associated Entra ID group |
+| `RemoveResourceGroups` | Boolean | No | $false | Remove associated Azure resource groups |
+| `Force` | Switch | No | $false | Skip confirmation prompts |
 
 ## Examples
 
@@ -63,19 +119,25 @@ You must be authenticated to Azure with appropriate permissions. The script will
 ```powershell
 .\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 25
 ```
-**Output**: Creates 25 users named TechConf2024-user1 through TechConf2024-user25
+**Output**: Creates 25 users named TechConf2024-user1 through TechConf2024-user25 and an Entra ID group "TechConf2024-users"
 
 ### Example 2: Custom Password
 ```powershell
 .\New-ConferenceUsers.ps1 -ConferenceName "DevWorkshop" -UserCount 10 -Password "Workshop2024!"
 ```
-**Output**: Creates 10 users with the specified password
+**Output**: Creates 10 users with the specified password and Entra ID group
 
-### Example 3: Large Conference
+### Example 3: Large Conference with Resource Groups
 ```powershell
-.\New-ConferenceUsers.ps1 -ConferenceName "GlobalSummit" -UserCount 100 -Domain "company.com"
+.\New-ConferenceUsers.ps1 -ConferenceName "GlobalSummit" -UserCount 100 -Domain "company.com" -CreateResourceGroups $true -Location "East US"
 ```
-**Output**: Creates 100 users using the specified domain
+**Output**: Creates 100 users using the specified domain, creates individual resource groups for each user in East US
+
+### Example 4: Complete Cleanup
+```powershell
+.\Remove-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -RemoveResourceGroups $true
+```
+**Output**: Removes all users, groups, and resource groups associated with TechConf2024
 
 ## Output
 
