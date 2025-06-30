@@ -45,6 +45,12 @@
     Displays a preview of users, groups, and resource groups that would be created,
     then asks for confirmation before proceeding.
 
+.PARAMETER ExcelOutputPath
+    Path where the Excel file containing user information should be saved.
+    Defaults to the current directory. The Excel file will include usernames,
+    passwords, and resource group information for all created users.
+    Requires the ImportExcel PowerShell module to be installed.
+
 .EXAMPLE
     .\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 15
     
@@ -98,7 +104,10 @@ param(
     [string]$Location,
     
     [Parameter(Mandatory = $false, HelpMessage = "Show what would be created without actually creating resources")]
-    [switch]$DryRun
+    [switch]$DryRun,
+    
+    [Parameter(Mandatory = $false, HelpMessage = "Path where Excel file should be saved (defaults to current directory)")]
+    [string]$ExcelOutputPath = "."
 )
 
 # Import required modules
@@ -117,6 +126,19 @@ function Import-RequiredModules {
             Write-Host "Importing module: $module" -ForegroundColor Green
             Import-Module $module -Force
         }
+    }
+    
+    # Import ImportExcel module for Excel output
+    if (!(Get-Module -ListAvailable -Name "ImportExcel")) {
+        Write-Warning "ImportExcel module is not installed. Excel output will be unavailable."
+        Write-Host "To enable Excel output, install the module using: Install-Module ImportExcel -Force" -ForegroundColor Yellow
+        $script:ExcelAvailable = $false
+    } else {
+        if (!(Get-Module -Name "ImportExcel")) {
+            Write-Host "Importing module: ImportExcel" -ForegroundColor Green
+            Import-Module ImportExcel -Force
+        }
+        $script:ExcelAvailable = $true
     }
     
     # Import Azure modules if resource group creation is requested
@@ -472,6 +494,66 @@ function New-UserResourceGroup {
     }
 }
 
+# Export user data to Excel
+function Export-UsersToExcel {
+    param(
+        [array]$Users,
+        [string]$ConferenceName,
+        [string]$Password,
+        [string]$OutputPath
+    )
+    
+    if (!$script:ExcelAvailable) {
+        Write-Warning "ImportExcel module is not available. Skipping Excel export."
+        Write-Host "To enable Excel export, install the module using: Install-Module ImportExcel -Force" -ForegroundColor Yellow
+        return
+    }
+    
+    if ($Users.Count -eq 0) {
+        Write-Warning "No users to export to Excel."
+        return
+    }
+    
+    try {
+        # Ensure output path exists
+        if (!(Test-Path $OutputPath)) {
+            New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
+        }
+        
+        # Create Excel file name with timestamp
+        $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+        $excelFileName = "$ConferenceName-Users-$timestamp.xlsx"
+        $excelFilePath = Join-Path $OutputPath $excelFileName
+        
+        # Prepare data for Excel export
+        $excelData = foreach ($user in $Users) {
+            [PSCustomObject]@{
+                'Conference Name' = $ConferenceName
+                'Display Name' = $user.DisplayName
+                'Username' = $user.Username
+                'Email Address' = $user.UserPrincipalName
+                'Password' = $Password
+                'Resource Group' = if ($user.ResourceGroup) { $user.ResourceGroup } else { "N/A" }
+                'Object ID' = $user.ObjectId
+                'Created Date' = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+            }
+        }
+        
+        # Export to Excel with formatting
+        $excelData | Export-Excel -Path $excelFilePath -WorksheetName "Conference Users" -AutoSize -BoldTopRow -FreezeTopRow
+        
+        Write-Host "✓ Excel file created successfully: $excelFilePath" -ForegroundColor Green
+        Write-Host "  • File contains $($Users.Count) user records" -ForegroundColor White
+        Write-Host "  • Includes usernames, passwords, and resource group information" -ForegroundColor White
+        
+        return $excelFilePath
+    }
+    catch {
+        Write-Warning "Failed to create Excel file: $($_.Exception.Message)"
+        return $null
+    }
+}
+
 # Main execution
 function Main {
     Write-Host "=== Conference User Creation Script ===" -ForegroundColor Cyan
@@ -610,6 +692,11 @@ function Main {
             Write-Host "Resource Groups: Created individual resource groups for each user" -ForegroundColor White
             Write-Host "Resource Group Location: $resourceGroupLocation" -ForegroundColor White
         }
+        
+        # Export to Excel
+        Write-Host ""
+        Write-Host "Exporting user information to Excel..." -ForegroundColor Yellow
+        $excelFilePath = Export-UsersToExcel -Users $createdUsers -ConferenceName $ConferenceName -Password $userPassword -OutputPath $ExcelOutputPath
     }
     
     # Disconnect from Microsoft Graph
