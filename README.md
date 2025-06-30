@@ -46,6 +46,7 @@ Effortlessly create and manage hundreds of user accounts for your conferences an
    Install-Module Microsoft.Graph.Authentication -Force
    Install-Module Microsoft.Graph.Users -Force
    Install-Module Microsoft.Graph.Groups -Force
+   Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force
    ```
 
 2. **🎯 Create your first conference (basic):**
@@ -75,6 +76,7 @@ Install the required Microsoft Graph PowerShell modules:
 Install-Module Microsoft.Graph.Authentication -Force
 Install-Module Microsoft.Graph.Users -Force
 Install-Module Microsoft.Graph.Groups -Force
+Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force
 ```
 
 For Azure resource group functionality, also install:
@@ -99,11 +101,20 @@ The user running the script must have sufficient permissions in the Azure tenant
 | `Directory.Read.All` | 📂 To read tenant information |
 | `Group.ReadWrite.All` | 👥 To create and manage groups |
 
+**Minimum Required Permissions:**
+The script executor must have adequate permissions to both Entra ID and Azure:
+- **Entra ID**: The above Microsoft Graph permissions are the minimum required
+- **Azure**: For resource group creation, **Contributor** or **Owner** role in the target subscription
+
 For Azure resource group creation:
 - 🏗️ **Contributor** or **Owner** role in the target subscription
 
 ### 🔐 Authentication
 You must be authenticated to Azure with appropriate permissions. The script will prompt for authentication when run.
+
+**⚠️ Important Limitations:**
+- 🚫 **MSA Personal Accounts**: This script cannot be executed with Microsoft Account (MSA) personal accounts. You must use a work or school account with access to an Azure Active Directory/Entra ID tenant.
+- 🏢 **Organizational Account Required**: The executing user must have an organizational account with the necessary permissions listed above.
 
 ## 💻 Usage
 
