@@ -40,6 +40,11 @@
     Azure location where resource groups should be created. If not specified,
     a list of available locations will be presented for selection.
 
+.PARAMETER DryRun
+    Show what would be created without actually creating any resources.
+    Displays a preview of users, groups, and resource groups that would be created,
+    then asks for confirmation before proceeding.
+
 .EXAMPLE
     .\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 15
     
@@ -50,6 +55,11 @@
     .\New-ConferenceUsers.ps1 -ConferenceName "DevWorkshop" -UserCount 5 -Password "TempPass123!" -CreateResourceGroups $true -Location "East US"
     
     Creates 5 users with a specific password, creates resource groups for each user in East US
+
+.EXAMPLE
+    .\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 10 -DryRun
+    
+    Shows what would be created for TechConf2024 with 10 users without actually creating anything
 
 .NOTES
     Prerequisites:
@@ -85,7 +95,10 @@ param(
     [string]$SubscriptionId,
     
     [Parameter(Mandatory = $false, HelpMessage = "Azure location for resource groups")]
-    [string]$Location
+    [string]$Location,
+    
+    [Parameter(Mandatory = $false, HelpMessage = "Show what would be created without actually creating resources")]
+    [switch]$DryRun
 )
 
 # Import required modules
@@ -260,6 +273,65 @@ function New-RandomPassword {
     return $password
 }
 
+# Show dry run preview of what would be created
+function Show-DryRunPreview {
+    param(
+        [string]$ConferenceName,
+        [int]$UserCount,
+        [string]$UserDomain,
+        [string]$UserPassword,
+        [bool]$ForcePasswordChange,
+        [bool]$CreateResourceGroups,
+        [string]$ResourceGroupLocation
+    )
+    
+    Write-Host ""
+    Write-Host "=== DRY RUN PREVIEW ===" -ForegroundColor Magenta
+    Write-Host "The following resources would be created:" -ForegroundColor Yellow
+    Write-Host ""
+    
+    # Show Entra ID Group
+    $groupName = "$ConferenceName-users"
+    Write-Host "Entra ID Group:" -ForegroundColor Cyan
+    Write-Host "  • Group Name: $groupName" -ForegroundColor White
+    Write-Host "  • Description: Conference users group for $ConferenceName" -ForegroundColor White
+    Write-Host ""
+    
+    # Show Users
+    Write-Host "Users ($UserCount):" -ForegroundColor Cyan
+    for ($i = 1; $i -le $UserCount; $i++) {
+        $username = "$ConferenceName-user$i"
+        $upn = "$username@$UserDomain"
+        $displayName = "$ConferenceName Workshop User $i"
+        Write-Host "  • $displayName ($upn)" -ForegroundColor White
+    }
+    Write-Host ""
+    
+    # Show Resource Groups if applicable
+    if ($CreateResourceGroups -and $ResourceGroupLocation) {
+        Write-Host "Azure Resource Groups ($UserCount):" -ForegroundColor Cyan
+        for ($i = 1; $i -le $UserCount; $i++) {
+            $username = "$ConferenceName-user$i"
+            $rgName = "rg-$username"
+            Write-Host "  • $rgName (Location: $ResourceGroupLocation)" -ForegroundColor White
+        }
+        Write-Host ""
+    }
+    
+    # Show Configuration Summary
+    Write-Host "Configuration:" -ForegroundColor Cyan
+    Write-Host "  • Conference Name: $ConferenceName" -ForegroundColor White
+    Write-Host "  • User Count: $UserCount" -ForegroundColor White
+    Write-Host "  • Domain: $UserDomain" -ForegroundColor White
+    Write-Host "  • Password: $UserPassword" -ForegroundColor White
+    Write-Host "  • Force Password Change: $ForcePasswordChange" -ForegroundColor White
+    Write-Host "  • Create Resource Groups: $CreateResourceGroups" -ForegroundColor White
+    if ($CreateResourceGroups -and $ResourceGroupLocation) {
+        Write-Host "  • Resource Group Location: $ResourceGroupLocation" -ForegroundColor White
+    }
+    Write-Host ""
+}
+
 # Create a single user
 function New-ConferenceUser {
     param(
@@ -406,6 +478,7 @@ function Main {
     Write-Host "Conference Name: $ConferenceName" -ForegroundColor White
     Write-Host "User Count: $UserCount" -ForegroundColor White
     Write-Host "Create Resource Groups: $CreateResourceGroups" -ForegroundColor White
+    Write-Host "Dry Run Mode: $DryRun" -ForegroundColor White
     Write-Host ""
     
     # Import required modules
@@ -435,6 +508,20 @@ function Main {
     if (!$Password) {
         Write-Host "Generated password: $userPassword" -ForegroundColor Yellow
         Write-Host "IMPORTANT: Save this password - it will be used for all created users!" -ForegroundColor Red
+    }
+    
+    # Show dry run preview and get confirmation
+    if ($DryRun) {
+        Show-DryRunPreview -ConferenceName $ConferenceName -UserCount $UserCount -UserDomain $userDomain -UserPassword $userPassword -ForcePasswordChange $ForcePasswordChange -CreateResourceGroups $CreateResourceGroups -ResourceGroupLocation $resourceGroupLocation
+        
+        $confirmation = Read-Host "Do you want to proceed with creating these resources? (y/N)"
+        if ($confirmation -notmatch '^[Yy]') {
+            Write-Host "Operation cancelled." -ForegroundColor Yellow
+            # Disconnect from Microsoft Graph
+            Disconnect-MgGraph | Out-Null
+            return
+        }
+        Write-Host ""
     }
     
     Write-Host ""

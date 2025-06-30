@@ -43,6 +43,18 @@ Write-Host "Command: .\New-ConferenceUsers.ps1 -ConferenceName 'DevWorkshop' -Us
 Write-Host "This creates users, group, and resource groups in a specific subscription and location" -ForegroundColor Gray
 Write-Host ""
 
+# Example 6a: Dry run preview
+Write-Host "Example 6a: Dry run preview" -ForegroundColor Yellow
+Write-Host "Command: .\New-ConferenceUsers.ps1 -ConferenceName 'TechConf2024' -UserCount 10 -DryRun" -ForegroundColor White
+Write-Host "This shows what would be created without actually creating anything, then asks for confirmation" -ForegroundColor Gray
+Write-Host ""
+
+# Example 6b: Dry run with resource groups
+Write-Host "Example 6b: Dry run with resource groups" -ForegroundColor Yellow
+Write-Host "Command: .\New-ConferenceUsers.ps1 -ConferenceName 'DevWorkshop' -UserCount 5 -CreateResourceGroups \$true -Location 'East US' -DryRun" -ForegroundColor White
+Write-Host "This shows what users and resources groups would be created, then asks for confirmation" -ForegroundColor Gray
+Write-Host ""
+
 Write-Host "========== USER REMOVAL EXAMPLES ==========" -ForegroundColor Magenta
 Write-Host ""
 
@@ -68,6 +80,18 @@ Write-Host ""
 Write-Host "Example 10: Remove from specific domain" -ForegroundColor Yellow
 Write-Host "Command: .\Remove-ConferenceUsers.ps1 -ConferenceName 'GlobalSummit' -Domain 'company.com'" -ForegroundColor White
 Write-Host "This removes users from a specific domain only" -ForegroundColor Gray
+Write-Host ""
+
+# Example 10a: Dry run removal preview
+Write-Host "Example 10a: Dry run removal preview" -ForegroundColor Yellow
+Write-Host "Command: .\Remove-ConferenceUsers.ps1 -ConferenceName 'TechConf2024' -DryRun" -ForegroundColor White
+Write-Host "This shows what would be removed without actually removing anything, then asks for confirmation" -ForegroundColor Gray
+Write-Host ""
+
+# Example 10b: Dry run with resource groups
+Write-Host "Example 10b: Dry run with resource groups" -ForegroundColor Yellow
+Write-Host "Command: .\Remove-ConferenceUsers.ps1 -ConferenceName 'DevWorkshop' -RemoveResourceGroups \$true -DryRun" -ForegroundColor White
+Write-Host "This shows what users, groups, and resource groups would be removed, then asks for confirmation" -ForegroundColor Gray
 Write-Host ""
 
 Write-Host "Prerequisites:" -ForegroundColor Green
