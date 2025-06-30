@@ -25,6 +25,11 @@
 .PARAMETER Force
     Skip confirmation prompts and proceed with deletion. Use with caution.
 
+.PARAMETER DryRun
+    Show what would be removed without actually removing any resources.
+    Displays a preview of users, groups, and resource groups that would be removed,
+    then asks for confirmation before proceeding.
+
 .EXAMPLE
     .\Remove-ConferenceUsers.ps1 -ConferenceName "TechConf2024"
     
@@ -34,6 +39,11 @@
     .\Remove-ConferenceUsers.ps1 -ConferenceName "DevWorkshop" -RemoveResourceGroups $true
     
     Removes users and also removes associated Azure resource groups
+
+.EXAMPLE
+    .\Remove-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -DryRun
+    
+    Shows what would be removed for TechConf2024 without actually removing anything
 
 .NOTES
     Prerequisites:
@@ -59,7 +69,10 @@ param(
     [bool]$RemoveResourceGroups = $false,
     
     [Parameter(Mandatory = $false, HelpMessage = "Skip confirmation prompts")]
-    [switch]$Force
+    [switch]$Force,
+    
+    [Parameter(Mandatory = $false, HelpMessage = "Show what would be removed without actually removing resources")]
+    [switch]$DryRun
 )
 
 # Import required modules
@@ -319,6 +332,7 @@ function Main {
     Write-Host "Conference Name: $ConferenceName" -ForegroundColor White
     Write-Host "Remove Groups: $RemoveGroups" -ForegroundColor White
     Write-Host "Remove Resource Groups: $RemoveResourceGroups" -ForegroundColor White
+    Write-Host "Dry Run Mode: $DryRun" -ForegroundColor White
     Write-Host ""
     
     # Import required modules
@@ -381,12 +395,33 @@ function Main {
         Write-Host ""
     }
     
-    # Confirmation
-    if (!$Force) {
-        $confirmation = Read-Host "Do you want to proceed with the removal? (y/N)"
+    # Handle dry run mode
+    if ($DryRun) {
+        Write-Host "=== DRY RUN PREVIEW ===" -ForegroundColor Magenta
+        Write-Host "This is a dry run. No resources will actually be removed." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Summary of what would be removed:" -ForegroundColor Cyan
+        Write-Host "  • Users: $($users.Count)" -ForegroundColor White
+        Write-Host "  • Groups: $($groups.Count)" -ForegroundColor White
+        Write-Host "  • Resource Groups: $($resourceGroups.Count)" -ForegroundColor White
+        Write-Host ""
+        
+        $confirmation = Read-Host "Do you want to proceed with removing these resources? (y/N)"
         if ($confirmation -notmatch '^[Yy]') {
             Write-Host "Operation cancelled." -ForegroundColor Yellow
+            # Disconnect from Microsoft Graph
+            Disconnect-MgGraph | Out-Null
             return
+        }
+        Write-Host ""
+    } else {
+        # Standard confirmation (not dry run)
+        if (!$Force) {
+            $confirmation = Read-Host "Do you want to proceed with the removal? (y/N)"
+            if ($confirmation -notmatch '^[Yy]') {
+                Write-Host "Operation cancelled." -ForegroundColor Yellow
+                return
+            }
         }
     }
     
