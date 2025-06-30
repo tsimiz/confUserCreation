@@ -1,0 +1,64 @@
+# PowerShell
+*.psd1
+*.psm1
+*.dll
+*.exe
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# IDE and editor files
+.vscode/
+.vs/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Azure/PowerShell specific
+*.publishsettings
+*.azurePubxml
+
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Secrets and sensitive data
+secrets.json
+appsettings.local.json
+*.secret
+*.key
