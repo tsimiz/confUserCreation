@@ -41,22 +41,29 @@ Effortlessly create and manage hundreds of user accounts for your conferences an
 
 ## 🚀 Quick Start
 
-1. **Install required modules:**
+1. **📦 Install required modules:**
    ```powershell
    Install-Module Microsoft.Graph.Authentication -Force
    Install-Module Microsoft.Graph.Users -Force
    Install-Module Microsoft.Graph.Groups -Force
    ```
 
-2. **Create your first conference:**
+2. **🎯 Create your first conference (basic):**
    ```powershell
    .\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 10
    ```
 
-3. **Clean up when done:**
+3. **👀 Preview before creating (recommended):**
+   ```powershell
+   .\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 10 -DryRun
+   ```
+
+4. **🧹 Clean up when done:**
    ```powershell
    .\Remove-ConferenceUsers.ps1 -ConferenceName "TechConf2024"
    ```
+
+> **💡 Tip**: Always use `-DryRun` first to see what will be created!
 
 ## 📋 Prerequisites
 
@@ -209,6 +216,18 @@ You must be authenticated to Azure with appropriate permissions. The script will
 ```
 **✨ Output**: Creates users and resource groups in a specific subscription and Azure region
 
+### 🔄 Example 7: No Password Change Required
+```powershell
+.\New-ConferenceUsers.ps1 -ConferenceName "TrainingLab" -UserCount 15 -ForcePasswordChange $false
+```
+**✨ Output**: Creates users who won't be forced to change password on first login - perfect for training environments
+
+### 🚫 Example 8: Safe Removal Preview
+```powershell
+.\Remove-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -DryRun
+```
+**✨ Output**: Shows exactly what would be removed without actually deleting anything - always safe to run first!
+
 ## 📊 Output
 
 The script provides detailed, color-coded output including:
@@ -319,6 +338,15 @@ Get-Help .\Remove-ConferenceUsers.ps1 -Full
 ```
 
 For community support, check the [GitHub Issues](https://github.com/tsimiz/confUserCreation/issues) page.
+
+### 💡 Pro Tips
+
+- 🔄 **Always use dry run first**: Use `-DryRun` parameter to preview changes before execution
+- 📝 **Save passwords securely**: Auto-generated passwords are complex and secure - store them in a password manager
+- 🏷️ **Use descriptive conference names**: This helps identify resources later and makes cleanup easier
+- 🧹 **Clean up regularly**: Remove test users and resources when no longer needed
+- 📊 **Monitor resource usage**: Keep track of Azure resource group costs when using the resource group feature
+- 🔍 **Check permissions**: Ensure adequate permissions before running large user creation batches
 
 ## 📄 License
 
