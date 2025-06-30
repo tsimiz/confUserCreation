@@ -84,6 +84,12 @@ Install-Module Az.Accounts -Force
 Install-Module Az.Resources -Force
 ```
 
+For Excel output functionality, install:
+```powershell
+# Optional module for Excel output (highly recommended)
+Install-Module ImportExcel -Force
+```
+
 ### 🔑 Azure Permissions
 The user running the script must have sufficient permissions in the Azure tenant:
 
@@ -166,6 +172,7 @@ You must be authenticated to Azure with appropriate permissions. The script will
 | `SubscriptionId` | String | ❌ | Current context | 📋 Azure subscription ID for resource groups |
 | `Location` | String | ❌ | Interactive selection | 🌍 Azure location for resource groups |
 | `DryRun` | Switch | ❌ | $false | 👀 Preview changes without executing |
+| `ExcelOutputPath` | String | ❌ | Current directory | 📊 Path where Excel file should be saved |
 
 ### 🗑️ Remove-ConferenceUsers.ps1
 
@@ -228,6 +235,12 @@ You must be authenticated to Azure with appropriate permissions. The script will
 ```
 **✨ Output**: Shows exactly what would be removed without actually deleting anything - always safe to run first!
 
+### 📊 Example 9: Excel Output to Custom Location
+```powershell
+.\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 20 -ExcelOutputPath "C:\Conference\Reports"
+```
+**✨ Output**: Creates 20 users and saves detailed Excel report to specified folder with usernames, passwords, and resource groups
+
 ## 📊 Output
 
 The script provides detailed, color-coded output including:
@@ -239,6 +252,7 @@ The script provides detailed, color-coded output including:
 - 📈 Summary of successful and failed creations
 - 📋 Complete list of created users
 - 🔑 Login credentials for the users
+- 📊 **Excel report** with comprehensive user details (usernames, passwords, resource groups)
 
 ### 💻 Sample Output
 ```

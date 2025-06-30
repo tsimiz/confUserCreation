@@ -55,6 +55,12 @@ Write-Host "Command: .\New-ConferenceUsers.ps1 -ConferenceName 'DevWorkshop' -Us
 Write-Host "This shows what users and resources groups would be created, then asks for confirmation" -ForegroundColor Gray
 Write-Host ""
 
+# Example 6c: Excel output to custom folder
+Write-Host "Example 6c: Excel output to custom folder" -ForegroundColor Yellow
+Write-Host "Command: .\New-ConferenceUsers.ps1 -ConferenceName 'TechConf2024' -UserCount 20 -ExcelOutputPath 'C:\Conference\Reports'" -ForegroundColor White
+Write-Host "This creates users and saves detailed Excel report to specified folder with usernames, passwords, and resource groups" -ForegroundColor Gray
+Write-Host ""
+
 Write-Host "========== USER REMOVAL EXAMPLES ==========" -ForegroundColor Magenta
 Write-Host ""
 
@@ -102,6 +108,8 @@ Write-Host "  3. Install-Module Microsoft.Graph.Groups -Force" -ForegroundColor 
 Write-Host "For Azure resource groups:" -ForegroundColor White
 Write-Host "  4. Install-Module Az.Accounts -Force" -ForegroundColor White
 Write-Host "  5. Install-Module Az.Resources -Force" -ForegroundColor White
+Write-Host "For Excel output (optional but recommended):" -ForegroundColor White
+Write-Host "  6. Install-Module ImportExcel -Force" -ForegroundColor White
 Write-Host "Permissions needed:" -ForegroundColor White
 Write-Host "  - User.ReadWrite.All, Directory.Read.All, Group.ReadWrite.All" -ForegroundColor White
 Write-Host "  - Contributor/Owner role in Azure subscription (for resource groups)" -ForegroundColor White
