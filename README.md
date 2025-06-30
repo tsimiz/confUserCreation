@@ -33,6 +33,8 @@ Effortlessly create and manage hundreds of user accounts for your conferences an
 - 👥 **Entra ID Group Management**: Creates and manages Entra ID groups for conference users
 - 🏗️ **Azure Resource Groups**: Optionally creates individual resource groups for each user
 - ⚙️ **Flexible Configuration**: Customizable user count, domain, and password settings
+- 🔑 **Unique Passwords**: Generates unique passwords for each user (or uses a shared password if specified)
+- 📊 **Excel Export**: Exports detailed user information including individual passwords to Excel
 - ⚡ **Dry Run Mode**: Preview changes before execution
 - 🛡️ **Error Handling**: Robust error handling with detailed logging
 - 🔐 **Security**: Uses Microsoft Graph API with proper authentication and permissions
@@ -210,47 +212,53 @@ You must be authenticated to Azure with appropriate permissions. The script will
 ```
 **✨ Output**: Creates 10 users with the specified password and Entra ID group
 
-### 🏗️ Example 3: Large Conference with Resource Groups
+### 🔑 Example 3: Unique Passwords for Each User  
+```powershell
+.\New-ConferenceUsers.ps1 -ConferenceName "SecureConf" -UserCount 15
+```
+**✨ Output**: Creates 15 users, each with a unique randomly generated password. Individual passwords are saved to the Excel export file for secure distribution.
+
+### 🏗️ Example 4: Large Conference with Resource Groups
 ```powershell
 .\New-ConferenceUsers.ps1 -ConferenceName "GlobalSummit" -UserCount 100 -Domain "company.com" -CreateResourceGroups $true -Location "East US"
 ```
 **✨ Output**: Creates 100 users using the specified domain, creates individual resource groups for each user in East US
 
-### 🧹 Example 4: Complete Cleanup
+### 🧹 Example 5: Complete Cleanup
 ```powershell
 .\Remove-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -RemoveResourceGroups $true
 ```
 **✨ Output**: Removes all users, groups, and resource groups associated with TechConf2024
 
-### 👀 Example 5: Dry Run Preview
+### 👀 Example 6: Dry Run Preview
 ```powershell
 .\New-ConferenceUsers.ps1 -ConferenceName "TestConf" -UserCount 5 -DryRun
 ```
 **✨ Output**: Shows what would be created without actually creating anything, then asks for confirmation
 
-### 🌍 Example 6: Multi-Location Setup
+### 🌍 Example 7: Multi-Location Setup
 ```powershell
 .\New-ConferenceUsers.ps1 -ConferenceName "GlobalEvent" -UserCount 50 -CreateResourceGroups $true -SubscriptionId "12345678-1234-1234-1234-123456789012" -Location "West Europe"
 ```
 **✨ Output**: Creates users and resource groups in a specific subscription and Azure region
 
-### 🔄 Example 7: No Password Change Required
+### 🔄 Example 8: No Password Change Required
 ```powershell
 .\New-ConferenceUsers.ps1 -ConferenceName "TrainingLab" -UserCount 15 -ForcePasswordChange $false
 ```
 **✨ Output**: Creates users who won't be forced to change password on first login - perfect for training environments
 
-### 🚫 Example 8: Safe Removal Preview
+### 🚫 Example 9: Safe Removal Preview
 ```powershell
 .\Remove-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -DryRun
 ```
 **✨ Output**: Shows exactly what would be removed without actually deleting anything - always safe to run first!
 
-### 📊 Example 9: Excel Output to Custom Location
+### 📊 Example 10: Excel Output to Custom Location
 ```powershell
 .\New-ConferenceUsers.ps1 -ConferenceName "TechConf2024" -UserCount 20 -ExcelOutputPath "C:\Conference\Reports"
 ```
-**✨ Output**: Creates 20 users and saves detailed Excel report to specified folder with usernames, passwords, and resource groups
+**✨ Output**: Creates 20 users with unique passwords and saves detailed Excel report to specified folder with usernames, individual passwords, and resource groups
 
 ## 📊 Output
 
@@ -280,8 +288,8 @@ Retrieving tenant information...
 Connected to tenant: Contoso Corporation
 Tenant ID: 12345678-1234-1234-1234-123456789012
 Using domain: contoso.com
-Generated password: Kj8#mN2pQ7wX
-IMPORTANT: Save this password - it will be used for all created users!
+Unique passwords will be generated for each user
+IMPORTANT: Individual passwords will be available in the Excel export file!
 
 Creating 5 users...
 Creating user 1 of 5: TechConf2024-user1@contoso.com
@@ -302,7 +310,8 @@ Created Users:
 
 Login Information:
 Username Format: TechConf2024-user[1-5]@contoso.com
-Password: Kj8#mN2pQ7wX
+Passwords: Unique password generated for each user
+Individual passwords are available in the Excel export file
 Force Password Change: True
 
 Script completed successfully!
@@ -310,7 +319,7 @@ Script completed successfully!
 
 ## 🔒 Security Considerations
 
-- 🔑 **Password Management**: If no password is specified, a random password is generated and displayed. Make sure to save this password securely.
+- 🔑 **Password Management**: If no password is specified, unique random passwords are generated for each user. These passwords are available in the Excel export file. Make sure to save and distribute these passwords securely.
 - 🛡️ **Permissions**: The script requires high-level permissions to create users. Ensure the running user has appropriate access.
 - 📝 **Audit Trail**: User creation activities are logged in Azure AD audit logs.
 - 🔐 **Password Policy**: Generated passwords comply with common complexity requirements, but ensure they meet your organization's password policy.
