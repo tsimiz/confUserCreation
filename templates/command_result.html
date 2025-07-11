@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Command Generated{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="d-flex align-items-center mb-4">
+            {% if operation == 'create' %}
+                <i class="bi bi-check-circle-fill text-success fs-1 me-3"></i>
+                <div>
+                    <h2 class="mb-0">PowerShell Command Generated</h2>
+                    <p class="text-muted mb-0">Command to create {{ user_count }} users for "{{ conference_name }}"</p>
+                </div>
+            {% else %}
+                <i class="bi bi-check-circle-fill text-danger fs-1 me-3"></i>
+                <div>
+                    <h2 class="mb-0">PowerShell Command Generated</h2>
+                    <p class="text-muted mb-0">Command to remove users for "{{ conference_name }}"</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-terminal-fill"></i>
+                    PowerShell Command
+                    <button class="btn btn-sm btn-outline-primary float-end" onclick="copyCommand()">
+                        <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                </h5>
+            </div>
+            <div class="card-body">
+                <pre id="commandText" class="bg-dark text-light p-3 rounded" style="white-space: pre-wrap; word-break: break-all;">{{ command }}</pre>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-4">
+            <h6><i class="bi bi-info-circle-fill"></i> Next Steps</h6>
+            <ol class="mb-0">
+                <li><strong>Copy the command</strong> above using the Copy button</li>
+                <li><strong>Open PowerShell</strong> as an administrator on a machine with the required modules</li>
+                <li><strong>Navigate</strong> to the directory containing the PowerShell scripts</li>
+                <li><strong>Paste and run</strong> the command</li>
+            </ol>
+        </div>
+        
+        {% if operation == 'create' %}
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="bi bi-check-circle-fill"></i> What This Command Will Do</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="bi bi-person-plus text-success"></i> Create {{ user_count }} user accounts</li>
+                            <li><i class="bi bi-people text-success"></i> Create Entra ID group for users</li>
+                            {% if 'CreateResourceGroups $true' in command %}
+                            <li><i class="bi bi-cloud text-success"></i> Create individual Azure resource groups</li>
+                            {% endif %}
+                            {% if 'DryRun' in command %}
+                            <li><i class="bi bi-eye text-info"></i> Preview only (dry run mode)</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Prerequisites</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="bi bi-check text-warning"></i> Microsoft.Graph modules installed</li>
+                            <li><i class="bi bi-check text-warning"></i> Appropriate Azure permissions</li>
+                            {% if 'CreateResourceGroups $true' in command %}
+                            <li><i class="bi bi-check text-warning"></i> Az PowerShell modules installed</li>
+                            {% endif %}
+                            <li><i class="bi bi-check text-warning"></i> User.ReadWrite.All permissions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h6 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> What This Command Will Do</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="bi bi-person-dash text-danger"></i> Remove users matching pattern</li>
+                            {% if 'RemoveGroups $false' not in command %}
+                            <li><i class="bi bi-people text-danger"></i> Remove associated Entra ID groups</li>
+                            {% endif %}
+                            {% if 'RemoveResourceGroups $true' in command %}
+                            <li><i class="bi bi-cloud text-danger"></i> Remove Azure resource groups</li>
+                            {% endif %}
+                            {% if 'DryRun' in command %}
+                            <li><i class="bi bi-eye text-info"></i> Preview only (dry run mode)</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0"><i class="bi bi-shield-exclamation"></i> Safety Reminder</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="bi bi-exclamation text-warning"></i> This action cannot be easily undone</li>
+                            {% if 'DryRun' not in command %}
+                            <li><i class="bi bi-exclamation text-danger"></i> Run with -DryRun first!</li>
+                            {% endif %}
+                            <li><i class="bi bi-exclamation text-warning"></i> Verify conference name is correct</li>
+                            <li><i class="bi bi-exclamation text-warning"></i> Ensure you have proper backups</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+            <div>
+                {% if operation == 'create' %}
+                <a href="{{ url_for('create_users') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Form
+                </a>
+                {% else %}
+                <a href="{{ url_for('remove_users') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Form
+                </a>
+                {% endif %}
+            </div>
+            <div>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="bi bi-house-fill"></i> Home
+                </a>
+                {% if operation == 'create' %}
+                <a href="{{ url_for('remove_users') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-person-dash"></i> Remove Users
+                </a>
+                {% else %}
+                <a href="{{ url_for('create_users') }}" class="btn btn-outline-success">
+                    <i class="bi bi-person-plus"></i> Create Users
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyCommand() {
+    const commandText = document.getElementById('commandText').textContent;
+    navigator.clipboard.writeText(commandText).then(function() {
+        // Change button text temporarily to show success
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-check"></i> Copied!';
+        button.classList.remove('btn-outline-primary');
+        button.classList.add('btn-success');
+        
+        setTimeout(function() {
+            button.innerHTML = originalHTML;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-primary');
+        }, 2000);
+    }).catch(function(err) {
+        alert('Failed to copy command to clipboard. Please copy manually.');
+    });
+}
+</script>
+{% endblock %}

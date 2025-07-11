@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}About - Conference User Creation{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <h2><i class="bi bi-info-circle-fill text-info"></i> About Conference User Creation</h2>
+        
+        <div class="card">
+            <div class="card-body">
+                <p class="lead">
+                    This web frontend provides a user-friendly interface for generating PowerShell commands 
+                    to create and manage conference workshop user accounts in Azure/Entra ID environments.
+                </p>
+                
+                <p>
+                    The underlying PowerShell scripts automate the process of setting up multiple user accounts, 
+                    groups, and resources for conferences, workshops, and training events, making it easy to 
+                    provision standardized environments for participants.
+                </p>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5><i class="bi bi-star-fill text-warning"></i> Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Automatic tenant discovery</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Standardized naming patterns</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Entra ID group management</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Azure resource group creation</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Flexible configuration options</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Unique password generation</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Excel export capability</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Dry run preview mode</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Comprehensive error handling</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Cleanup support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5><i class="bi bi-gear-fill text-primary"></i> How It Works</h5>
+                    </div>
+                    <div class="card-body">
+                        <ol>
+                            <li><strong>Fill the web form</strong> with your conference parameters</li>
+                            <li><strong>Generate</strong> the PowerShell command with proper syntax</li>
+                            <li><strong>Copy</strong> the command to your clipboard</li>
+                            <li><strong>Run</strong> the command in PowerShell with appropriate permissions</li>
+                            <li><strong>Users and resources</strong> are created automatically</li>
+                        </ol>
+                        <p class="text-muted">
+                            The web interface acts as a command generator - it doesn't directly modify your 
+                            Azure environment but creates the exact PowerShell commands you need.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="bi bi-list-check"></i> Prerequisites</h5>
+            </div>
+            <div class="card-body">
+                <h6>PowerShell Modules</h6>
+                <p>Install the required Microsoft Graph PowerShell modules:</p>
+                <pre class="bg-dark text-light p-3 rounded">Install-Module Microsoft.Graph.Authentication -Force
+Install-Module Microsoft.Graph.Users -Force
+Install-Module Microsoft.Graph.Groups -Force
+Install-Module Microsoft.Graph.Identity.DirectoryManagement -Force</pre>
+                
+                <h6 class="mt-4">For Azure Resource Groups</h6>
+                <pre class="bg-dark text-light p-3 rounded">Install-Module Az.Accounts -Force
+Install-Module Az.Resources -Force</pre>
+                
+                <h6 class="mt-4">For Excel Output (Optional)</h6>
+                <pre class="bg-dark text-light p-3 rounded">Install-Module ImportExcel -Force</pre>
+                
+                <h6 class="mt-4">Azure Permissions</h6>
+                <p>The user running the script must have sufficient permissions in the Azure tenant:</p>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Permission</th>
+                                <th>Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>User.ReadWrite.All</code></td>
+                                <td>To create and manage users</td>
+                            </tr>
+                            <tr>
+                                <td><code>Directory.Read.All</code></td>
+                                <td>To read tenant information</td>
+                            </tr>
+                            <tr>
+                                <td><code>Group.ReadWrite.All</code></td>
+                                <td>To create and manage groups</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Contributor</strong> or <strong>Owner</strong></td>
+                                <td>For Azure resource group creation</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="bi bi-shield-exclamation"></i> Security Considerations</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li><strong>Password Management:</strong> Unique random passwords are generated for each user when no password is specified</li>
+                    <li><strong>Permissions:</strong> High-level permissions are required - ensure appropriate access controls</li>
+                    <li><strong>Audit Trail:</strong> User creation activities are logged in Azure AD audit logs</li>
+                    <li><strong>Access Control:</strong> Created users inherit default tenant permissions - review as needed</li>
+                    <li><strong>Cleanup:</strong> Always remove test users and resources when no longer needed</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="bi bi-exclamation-triangle-fill text-warning"></i> Important Limitations</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <ul class="mb-0">
+                        <li><strong>MSA Personal Accounts:</strong> Cannot be used with Microsoft Account (MSA) personal accounts</li>
+                        <li><strong>Organizational Account Required:</strong> Must use work or school account with Azure AD/Entra ID access</li>
+                        <li><strong>Network Requirements:</strong> Requires internet connectivity to Azure services</li>
+                        <li><strong>PowerShell Version:</strong> Requires PowerShell 5.1 or higher</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="bi bi-github"></i> Source Code</h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    This tool is part of the Conference User Creation project. The PowerShell scripts and this web frontend 
+                    are open source and available on GitHub.
+                </p>
+                <p>
+                    <strong>Repository:</strong> 
+                    <a href="https://github.com/tsimiz/confUserCreation" target="_blank" class="text-decoration-none">
+                        <i class="bi bi-github"></i> tsimiz/confUserCreation
+                    </a>
+                </p>
+                <p>
+                    For issues, feature requests, or contributions, please visit the GitHub repository.
+                </p>
+            </div>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
