@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Conference User Creation - Home{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-primary text-white rounded p-5 mb-4">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold"><i class="bi bi-people-fill"></i> Conference User Creation</h1>
+        <p class="col-md-8 fs-4">Web frontend for Azure/Entra ID conference user management PowerShell scripts</p>
+        <p class="lead">
+            Generate PowerShell commands to create and manage conference workshop user accounts in Azure/Entra ID environments.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-person-plus-fill text-success"></i>
+                    Create Conference Users
+                </h5>
+                <p class="card-text">
+                    Generate commands to create multiple user accounts for conferences, workshops, and training events.
+                    Supports user creation, Entra ID groups, and Azure resource groups.
+                </p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Bulk user creation (1-1000 users)</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Standardized naming patterns</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Entra ID group management</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Azure resource groups</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Excel export capability</li>
+                </ul>
+                <a href="{{ url_for('create_users') }}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Create Users
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-person-dash-fill text-danger"></i>
+                    Remove Conference Users
+                </h5>
+                <p class="card-text">
+                    Generate commands to clean up conference resources when no longer needed.
+                    Supports user removal, group cleanup, and resource group deletion.
+                </p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Pattern-based user removal</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Entra ID group cleanup</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Resource group deletion</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Dry-run preview</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Force mode for automation</li>
+                </ul>
+                <a href="{{ url_for('remove_users') }}" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Remove Users
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-info-circle-fill text-info"></i>
+                    How It Works
+                </h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="bi bi-1-circle-fill fs-1 text-primary"></i>
+                            <h6 class="mt-2">Fill the Form</h6>
+                            <p class="text-muted">Enter your conference details and configuration parameters</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="bi bi-2-circle-fill fs-1 text-primary"></i>
+                            <h6 class="mt-2">Generate Command</h6>
+                            <p class="text-muted">Get the complete PowerShell command with all your parameters</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="bi bi-3-circle-fill fs-1 text-primary"></i>
+                            <h6 class="mt-2">Run in PowerShell</h6>
+                            <p class="text-muted">Copy and execute the command in your PowerShell environment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6><i class="bi bi-exclamation-triangle-fill"></i> Prerequisites</h6>
+            <p class="mb-0">
+                Before running the generated commands, ensure you have the required PowerShell modules installed and appropriate Azure permissions.
+                <a href="{{ url_for('about') }}" class="alert-link">Learn more about prerequisites.</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

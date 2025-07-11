@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Remove Conference Users{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h2><i class="bi bi-person-dash-fill text-danger"></i> Remove Conference Users</h2>
+        <p class="text-muted">Fill in the parameters to generate a PowerShell command for removing conference users and resources.</p>
+        
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Warning:</strong> This operation will remove users and potentially associated resources. 
+            Always use dry-run mode first to preview what will be removed.
+        </div>
+        
+        <form method="POST" id="removeUsersForm">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-gear-fill"></i> Basic Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="conference_name" class="form-label">Conference Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="conference_name" name="conference_name" 
+                                       value="{{ form_data.conference_name if form_data else '' }}" required>
+                                <div class="form-text">Name of the conference to identify users for removal</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="domain" class="form-label">Domain</label>
+                                <input type="text" class="form-control" id="domain" name="domain" 
+                                       placeholder="company.com" value="{{ form_data.domain if form_data else '' }}">
+                                <div class="form-text">Leave empty to use tenant's default domain</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-trash-fill"></i> Removal Options</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="remove_groups" 
+                                   name="remove_groups" value="true" 
+                                   {{ 'checked' if not form_data or form_data.remove_groups != 'false' else '' }}>
+                            <label class="form-check-label" for="remove_groups">
+                                Remove associated Entra ID groups
+                            </label>
+                            <div class="form-text">Remove the conference user group created with the users</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="remove_resource_groups" 
+                                   name="remove_resource_groups" value="true"
+                                   {{ 'checked' if form_data and form_data.remove_resource_groups == 'true' else '' }}>
+                            <label class="form-check-label" for="remove_resource_groups">
+                                Remove associated Azure resource groups
+                            </label>
+                            <div class="form-text">
+                                <strong>Warning:</strong> This will permanently delete all resources in the resource groups!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-sliders"></i> Execution Options</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="dry_run" 
+                                       name="dry_run" value="true"
+                                       {{ 'checked' if form_data and form_data.dry_run == 'true' else '' }}>
+                                <label class="form-check-label" for="dry_run">
+                                    <i class="bi bi-eye-fill text-info"></i>
+                                    Dry run (preview only, don't remove resources)
+                                </label>
+                                <div class="form-text">
+                                    <strong>Recommended:</strong> Always use this first to see what will be removed
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="force" 
+                                       name="force" value="true"
+                                       {{ 'checked' if form_data and form_data.force == 'true' else '' }}>
+                                <label class="form-check-label" for="force">
+                                    <i class="bi bi-lightning-fill text-warning"></i>
+                                    Force (skip confirmation prompts)
+                                </label>
+                                <div class="form-text">
+                                    <strong>Caution:</strong> Use only for automation, removes safety prompts
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-diamond-fill"></i> Safety Checklist</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Before running the removal command, please verify:</strong></p>
+                    <ul class="list-unstyled">
+                        <li>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="safety1" required>
+                                <label class="form-check-label" for="safety1">
+                                    I have confirmed the conference name is correct
+                                </label>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="safety2" required>
+                                <label class="form-check-label" for="safety2">
+                                    I will use dry-run mode first to preview the changes
+                                </label>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="safety3" required>
+                                <label class="form-check-label" for="safety3">
+                                    I understand this action cannot be easily undone
+                                </label>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-terminal"></i> Generate Command
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

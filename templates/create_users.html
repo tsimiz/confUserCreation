@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Create Conference Users{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h2><i class="bi bi-person-plus-fill text-success"></i> Create Conference Users</h2>
+        <p class="text-muted">Fill in the parameters to generate a PowerShell command for creating conference users.</p>
+        
+        <form method="POST" id="createUsersForm">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-gear-fill"></i> Basic Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="conference_name" class="form-label">Conference Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="conference_name" name="conference_name" 
+                                       value="{{ form_data.conference_name if form_data else '' }}" required>
+                                <div class="form-text">Used as username prefix (e.g., "TechConf2024" → "TechConf2024-user1")</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="user_count" class="form-label">User Count</label>
+                                <input type="number" class="form-control" id="user_count" name="user_count" 
+                                       min="1" max="1000" value="{{ form_data.user_count if form_data else '10' }}">
+                                <div class="form-text">Number of users to create (1-1000)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="domain" class="form-label">Domain</label>
+                                <input type="text" class="form-control" id="domain" name="domain" 
+                                       placeholder="company.com" value="{{ form_data.domain if form_data else '' }}">
+                                <div class="form-text">Leave empty to use tenant's default domain</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       value="{{ form_data.password if form_data else '' }}">
+                                <div class="form-text">Leave empty to generate unique passwords for each user</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="force_password_change" 
+                                   name="force_password_change" value="true" 
+                                   {{ 'checked' if not form_data or form_data.force_password_change != 'false' else '' }}>
+                            <label class="form-check-label" for="force_password_change">
+                                Force password change on first login
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-cloud-fill"></i> Azure Resource Groups</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="create_resource_groups" 
+                                   name="create_resource_groups" value="true"
+                                   {{ 'checked' if form_data and form_data.create_resource_groups == 'true' else '' }}
+                                   onchange="toggleResourceGroupOptions()">
+                            <label class="form-check-label" for="create_resource_groups">
+                                Create individual Azure resource groups for each user
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="resourceGroupOptions" style="display: {{ 'block' if form_data and form_data.create_resource_groups == 'true' else 'none' }};">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="subscription_id" class="form-label">Subscription ID</label>
+                                    <input type="text" class="form-control" id="subscription_id" name="subscription_id" 
+                                           placeholder="12345678-1234-1234-1234-123456789012"
+                                           value="{{ form_data.subscription_id if form_data else '' }}">
+                                    <div class="form-text">Leave empty to use current subscription context</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">Azure Location</label>
+                                    <select class="form-select" id="location" name="location">
+                                        <option value="">Select location...</option>
+                                        {% for loc in locations %}
+                                            <option value="{{ loc }}" {{ 'selected' if form_data and form_data.location == loc else '' }}>{{ loc }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Azure region for resource groups</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-sliders"></i> Advanced Options</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="excel_output_path" class="form-label">Excel Output Path</label>
+                                <input type="text" class="form-control" id="excel_output_path" name="excel_output_path" 
+                                       placeholder="C:\Conference\Reports" value="{{ form_data.excel_output_path if form_data else '' }}">
+                                <div class="form-text">Leave empty to use current directory</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="pt-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="dry_run" 
+                                           name="dry_run" value="true"
+                                           {{ 'checked' if form_data and form_data.dry_run == 'true' else '' }}>
+                                    <label class="form-check-label" for="dry_run">
+                                        Dry run (preview only, don't create resources)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-terminal"></i> Generate Command
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleResourceGroupOptions() {
+    const checkbox = document.getElementById('create_resource_groups');
+    const options = document.getElementById('resourceGroupOptions');
+    options.style.display = checkbox.checked ? 'block' : 'none';
+}
+</script>
+{% endblock %}
